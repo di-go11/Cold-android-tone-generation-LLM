@@ -1,0 +1,194 @@
+# ELYZA LLM Fine-tuning for Cold Android Tone Generation
+
+ELYZAのLLMをファインチューニングして、クールなアンドロイド調のテキストを生成するためのプロジェクトです。
+
+## 概要
+
+このプロジェクトは、ELYZA社の日本語LLMを使用して、冷たく機械的なアンドロイド風の文体でテキストを生成できるようにファインチューニングするためのツールセットです。
+
+## 特徴
+
+- **ELYZA LLMベース**: ELYZA社の高性能日本語LLMを使用
+- **効率的なファインチューニング**: LoRAやQLoRAを使用したメモリ効率的な学習
+- **カスタマイズ可能**: トーンや文体を調整可能
+- **簡単なセットアップ**: 数ステップで学習環境を構築
+
+## 必要な環境
+
+- Python 3.8以上
+- CUDA対応GPU（推奨）
+- 16GB以上のRAM（推奨）
+
+## インストール
+
+```bash
+git clone https://github.com/di-go11/Cold-android-tone-generation-LLM.git
+cd Cold-android-tone-generation-LLM
+pip install -r requirements.txt
+```
+
+## クイックスタート
+
+すぐに始めたい場合は、[QUICKSTART.md](QUICKSTART.md)をご覧ください。
+
+または、デモスクリプトを実行してください：
+
+```bash
+python demo.py
+```
+
+## 使用方法
+
+### 1. データ準備
+
+#### オプション A: LoRA由来の包括的データセットを使用（推奨）
+
+```bash
+# LoRAブランチのJSONファイルから生成された306サンプルのデータセット
+python prepare_data.py --use_lora_data --output_file data/training_data_full.json
+```
+
+#### オプション B: サンプルデータのみ使用
+
+```bash
+# 基本的な10サンプルのデータセット
+python prepare_data.py --create_sample --output_file data/sample_training.json
+```
+
+#### オプション C: カスタムテキストファイルを処理
+
+```bash
+python prepare_data.py --input_file your_data.txt --output_file processed_data.json
+```
+
+### 2. ファインチューニング
+
+```bash
+python finetune.py --config config/training_config.yaml
+```
+
+### 3. テキスト生成
+
+```bash
+python generate.py --model_path ./output/model --prompt "あなたの質問をここに入力"
+```
+
+## ファインチューニング手法
+
+### 1. LoRA (Low-Rank Adaptation)
+- メモリ効率的なファインチューニング手法
+- 元のモデルパラメータを凍結し、小さなアダプターレイヤーのみを学習
+- 学習時間とメモリ使用量を大幅に削減
+
+### 2. QLoRA (Quantized LoRA)
+- LoRAをさらに効率化した手法
+- 4bit量子化と組み合わせて使用
+- 限られたGPUメモリでも大規模モデルの学習が可能
+
+### 3. データ形式
+```json
+{
+  "instruction": "ユーザーの指示",
+  "input": "入力テキスト",
+  "output": "冷たいアンドロイド調の出力"
+}
+```
+
+## 設定ファイル
+
+`config/training_config.yaml`で学習パラメータを調整できます：
+
+```yaml
+model_name: "elyza/ELYZA-japanese-Llama-2-7b-instruct"
+output_dir: "./output"
+learning_rate: 2e-4
+batch_size: 4
+epochs: 3
+lora_r: 8
+lora_alpha: 32
+```
+
+## サンプルデータとファイル構成
+
+プロジェクトには冷たいアンドロイド調のサンプルデータが含まれています：
+
+- `data/sample_data.json`: 学習用サンプルデータ
+- `data/prompts.txt`: テスト用プロンプト集
+
+### スクリプト一覧
+
+- `finetune.py`: メインのファインチューニングスクリプト
+- `generate.py`: テキスト生成スクリプト（インタラクティブモード対応）
+- `prepare_data.py`: データ準備・前処理スクリプト
+- `evaluate.py`: モデル評価スクリプト
+- `demo.py`: デモンストレーション・チュートリアルスクリプト
+- `test_setup.py`: セットアップ検証スクリプト
+- `setup.sh`: 環境セットアップスクリプト
+
+### 設定ファイル
+
+- `config/training_config.yaml`: 学習パラメータ設定
+- `requirements.txt`: Python依存関係
+- `QUICKSTART.md`: クイックスタートガイド
+
+### データセット
+
+プロジェクトには3つのデータソースが含まれています：
+
+#### 1. LoRA由来の包括的データセット（推奨）
+- **ファイル**: `data/cold_android_finetune_data.json`
+- **サンプル数**: 306件
+- **作成方法**: `process_lora_data.py`でLLM_sentence_dataブランチのLoRAフォルダから生成
+- **内容**: 
+  - 会話データから抽出した191サンプル
+  - フレーズデータから変換した100サンプル  
+  - 手動で作成した15の追加バリエーション
+
+#### 2. 基本サンプルデータ
+- **ファイル**: `data/sample_data.json`
+- **サンプル数**: 10件
+- **内容**: 基本的な冷たいアンドロイド調変換例
+
+#### 3. プロンプト集
+- **ファイル**: `data/prompts.txt`
+- **内容**: テスト用プロンプト集
+
+#### データセット生成コマンド
+```bash
+# LoRAデータから新しいファインチューニングデータを再生成
+python process_lora_data.py
+```
+
+## トラブルシューティング
+
+### よくある問題
+
+1. **GPUメモリ不足**
+   - `batch_size`を小さくする
+   - QLoRAを使用する
+   - `gradient_checkpointing`を有効にする
+
+2. **学習が進まない**
+   - 学習率を調整する
+   - データの品質を確認する
+   - エポック数を増やす
+
+### ログとモニタリング
+
+学習の進行状況は以下で確認できます：
+- TensorBoard: `tensorboard --logdir ./logs`
+- Wandb（オプション）: 設定ファイルで有効化
+
+## ライセンス
+
+MIT License
+
+## 貢献
+
+プルリクエストやイシューの報告を歓迎します。
+
+## 参考文献
+
+- [ELYZA](https://elyza.ai/)
+- [LoRA: Low-Rank Adaptation of Large Language Models](https://arxiv.org/abs/2106.09685)
+- [QLoRA: Efficient Finetuning of Quantized LLMs](https://arxiv.org/abs/2305.14314)
