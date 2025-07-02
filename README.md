@@ -27,6 +27,16 @@ cd Cold-android-tone-generation-LLM
 pip install -r requirements.txt
 ```
 
+## クイックスタート
+
+すぐに始めたい場合は、[QUICKSTART.md](QUICKSTART.md)をご覧ください。
+
+または、デモスクリプトを実行してください：
+
+```bash
+python demo.py
+```
+
 ## 使用方法
 
 ### 1. データ準備
@@ -82,12 +92,28 @@ lora_r: 8
 lora_alpha: 32
 ```
 
-## サンプルデータ
+## サンプルデータとファイル構成
 
 プロジェクトには冷たいアンドロイド調のサンプルデータが含まれています：
 
 - `data/sample_data.json`: 学習用サンプルデータ
 - `data/prompts.txt`: テスト用プロンプト集
+
+### スクリプト一覧
+
+- `finetune.py`: メインのファインチューニングスクリプト
+- `generate.py`: テキスト生成スクリプト（インタラクティブモード対応）
+- `prepare_data.py`: データ準備・前処理スクリプト
+- `evaluate.py`: モデル評価スクリプト
+- `demo.py`: デモンストレーション・チュートリアルスクリプト
+- `test_setup.py`: セットアップ検証スクリプト
+- `setup.sh`: 環境セットアップスクリプト
+
+### 設定ファイル
+
+- `config/training_config.yaml`: 学習パラメータ設定
+- `requirements.txt`: Python依存関係
+- `QUICKSTART.md`: クイックスタートガイド
 
 ## トラブルシューティング
 
