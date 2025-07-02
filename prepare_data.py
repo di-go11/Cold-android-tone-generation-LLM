@@ -119,8 +119,13 @@ def main():
     parser.add_argument(
         "--output_file",
         type=str,
-        default="data/sample_data.json",
-        help="Output JSON file path"
+        default="data/training_data.json",
+        help="Output JSON file for training data"
+    )
+    parser.add_argument(
+        "--use_lora_data",
+        action="store_true",
+        help="Use the processed LoRA data as the base dataset"
     )
     parser.add_argument(
         "--create_sample",
@@ -136,13 +141,28 @@ def main():
     
     examples = []
     
-    # Create sample data
-    if args.create_sample or not args.input_file:
+    # Option 1: Use the comprehensive LoRA-derived dataset
+    if args.use_lora_data:
+        lora_data_file = "data/cold_android_finetune_data.json"
+        if Path(lora_data_file).exists():
+            try:
+                with open(lora_data_file, 'r', encoding='utf-8') as f:
+                    examples = json.load(f)
+                logger.info(f"Loaded {len(examples)} examples from LoRA dataset")
+            except Exception as e:
+                logger.error(f"Error loading LoRA data: {e}")
+                examples = create_android_tone_examples()
+        else:
+            logger.warning("LoRA data file not found, using sample data instead")
+            examples = create_android_tone_examples()
+    
+    # Option 2: Create sample data
+    elif args.create_sample or not args.input_file:
         logger.info("Creating sample android tone data...")
         examples.extend(create_android_tone_examples())
     
     # Process input file if provided
-    if args.input_file:
+    if args.input_file and not args.use_lora_data:
         logger.info(f"Processing input file: {args.input_file}")
         file_examples = process_text_file(args.input_file)
         examples.extend(file_examples)
@@ -150,6 +170,14 @@ def main():
     if examples:
         save_dataset(examples, args.output_file)
         logger.info(f"Data preparation completed. Total examples: {len(examples)}")
+        
+        # Show first few examples
+        logger.info("Sample of the generated data:")
+        for i, example in enumerate(examples[:3]):
+            logger.info(f"Example {i+1}:")
+            logger.info(f"  Instruction: {example['instruction']}")
+            logger.info(f"  Input: {example['input']}")
+            logger.info(f"  Output: {example['output']}")
     else:
         logger.warning("No examples were created. Please check your input.")
 

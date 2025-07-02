@@ -41,6 +41,22 @@ python demo.py
 
 ### 1. データ準備
 
+#### オプション A: LoRA由来の包括的データセットを使用（推奨）
+
+```bash
+# LoRAブランチのJSONファイルから生成された306サンプルのデータセット
+python prepare_data.py --use_lora_data --output_file data/training_data_full.json
+```
+
+#### オプション B: サンプルデータのみ使用
+
+```bash
+# 基本的な10サンプルのデータセット
+python prepare_data.py --create_sample --output_file data/sample_training.json
+```
+
+#### オプション C: カスタムテキストファイルを処理
+
 ```bash
 python prepare_data.py --input_file your_data.txt --output_file processed_data.json
 ```
@@ -114,6 +130,34 @@ lora_alpha: 32
 - `config/training_config.yaml`: 学習パラメータ設定
 - `requirements.txt`: Python依存関係
 - `QUICKSTART.md`: クイックスタートガイド
+
+### データセット
+
+プロジェクトには3つのデータソースが含まれています：
+
+#### 1. LoRA由来の包括的データセット（推奨）
+- **ファイル**: `data/cold_android_finetune_data.json`
+- **サンプル数**: 306件
+- **作成方法**: `process_lora_data.py`でLLM_sentence_dataブランチのLoRAフォルダから生成
+- **内容**: 
+  - 会話データから抽出した191サンプル
+  - フレーズデータから変換した100サンプル  
+  - 手動で作成した15の追加バリエーション
+
+#### 2. 基本サンプルデータ
+- **ファイル**: `data/sample_data.json`
+- **サンプル数**: 10件
+- **内容**: 基本的な冷たいアンドロイド調変換例
+
+#### 3. プロンプト集
+- **ファイル**: `data/prompts.txt`
+- **内容**: テスト用プロンプト集
+
+#### データセット生成コマンド
+```bash
+# LoRAデータから新しいファインチューニングデータを再生成
+python process_lora_data.py
+```
 
 ## トラブルシューティング
 
